@@ -1,0 +1,8 @@
+-r requirements.txt
+ipython
+black
+flake8
+pytest
+pytest-cov
+twine
+wheel
