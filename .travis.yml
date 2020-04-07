@@ -1,13 +1,19 @@
 language: python
 python:
-  - "3.6"
-  - "3.7"
-  - "3.8"
-
+- '3.6'
+- '3.7'
+- '3.8'
 install:
-  - pip install -r dev_requirements.txt
-  - pip install .
-
+- pip install -r dev_requirements.txt
+- pip install .
 script:
-  - pytest --cov -vv
-  - bash <(curl -s https://codecov.io/bash)
+- pytest --cov -vv
+- bash <(curl -s https://codecov.io/bash)
+deploy:
+  provider: pypi
+  user: __token__
+  password:
+    secure: NynkqkPoIce+N7vm9ycU2RX72HCLsBTQxzO9DlKU+KXhMafYdZcTX8u3DHZysQA8jgpxJbSVPa6jml9t2PnFPCE16rgnss1skNR4aQX+kKtQy8ERXcL4Sukf4sok0PXM9ysULSzkFLFLPYHS3XEDr2c0bUdXHk4e3NMb7Q+VDYin8lyvY+EaEWbW5WLD+MUz7g4FmTVf/8x59+vkNkIR3II6Kb4rKH62RdS23eE7ubCxLEf8flMbcmelZUOVmOwz+yL1EF9vq75eUx+00GsLPQt9IQyJN08DmgQcVwb8MM14USwFXVmEsO9jHA8McoktnN0dRVmIHsiUwFpEpCXZpfTcjgxYLMKdiZtWOcTbZSX+N66GYlQ7Hx5g/FOs+tkuAPtLsPL48uGaAp93yfgehi2qL4VahEMEUpkCC8Ea/VJqNPYro8ECoPDHNg5Hidw2QsgAQ5zfuu7JY7DL4JSIVw8zmv6SRoDSDPZ6qyi4DzmuVtv3hGgYm9H8bnqH8FzSQNoXovZna7uzSfc4dCmgTII7XidymfSrj6nWJDCe14CwMrqqXOpC/XaCVLrz2E/Z1zIqXe2k/3f9S8M29j0y7wtYJwMvXU5nYLYViSpUE1p6qMGmJCvZZXn45EyHR7tlGHgjbEmjuidFg9v/qxK/Vj9kEDz1Rzo+Ny8/aJINMGI=
+  on:
+    tags: true
+  skip_existing: true
