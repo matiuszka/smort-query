@@ -17,22 +17,22 @@ search of the right objects in right order.
 I realized that most of the time code looks almost the same, but what kind of interface will be easiest to use ? In that moment I figured out that [Django QuerySets](https://docs.djangoproject.com/en/3.0/ref/models/querysets/#queryset-api-reference) implementation is kinda handy and well known.
 
 So I decided to write small query engine that interface will be similar to Django one.
-But it will works for Python objects. Additional assumption was that it will be lazy evaluated to
+But it will work for Python objects. Additional assumption was that it will be lazy evaluated to
 avoid memory consumption.
 
 ## Lookup format
 
 Whole idea relays on keywords arguments naming format.
-Let's consider following qualname `attr1.attr2` which can we used to get or set value for it.
+Let's consider following qualname `attr1.attr2` which can we used to get or set value for attribute.
 This engine do things similarly but instead of separating by dot(`.`) we are separating by `__` signs.
-So above example can be converted to keyword argument name like that `attr1__attr2`. Due to fact that we cant use `.` in argument names.
+So above example can be converted to keyword argument name like that `attr1__attr2`. Due to fact that we can't use `.` in argument names.
 
 For some methods like `filter` and `exclude`, we can also specify comparator.
-By default those methods are comparing against equality `==`. But we have easily change it.
+By default those methods are comparing against equality `==`. But we can easily change it.
 If we want to compare by using `<=` we can use `__le` or `__lte` postfix.
-So we wil end up with argument name like `attr1__attr2__lt`.
+So we will end up with argument name like `attr1__attr2__lt`.
 
-All supported comparators are described here [supported comparators](#supported-comparators).
+All supported comparators are described here in [supported comparators](#supported-comparators) section.
 
 ## Installation
 
@@ -53,49 +53,85 @@ from smort_query import OQ
 ### Basics
 
 Each method in `ObjectQuery` produces new query. Which makes chaining very easy.
-The most important thing is that `ObjectQuery` instances are unevaluated it means that
+The most important thing is that `ObjectQuery` instances are unevaluated - it means that
 they are not loading an objects to the memory even when we are chaining them.
+
 Query sets can be evaluated in several ways:
-- Iteration
+- Iteration:
     ```python
-    query = ObjectQuery(range(10))
+    query = ObjectQuery(range(5))
 
     for obj in query:
         print(obj)
+
+    """out:
+    1
+    2
+    3
+    4
+    5
+    """
     ```
-- Checking length
+- Checking length:
     ```python
     query = ObjectQuery(range(10))
 
     len(query)
+    """out:
+    10
+    """
     ```
-- Reversing query
+- Reversing query:
     ```python
     query = ObjectQuery(range(10))
 
     query.reverse()
+    """out:
+    <ObjectQuery for <reversed object at 0x04E8B460>>
+    """
 
+    list(list(query.reverse()))
+    """out
+    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+    """
     ```
-- Getting items
+- Getting items:
     - Getting by index evaluates query:
         ```python
         query = ObjectQuery(range(10))
         query[5]
+        """out:
+        5
+        """
         ```
     - But slices not! They creates another query.
         ```python
         query = ObjectQuery(range(10))
         query[5:0:-1]
+        """out:
+        <ObjectQuery for <generator object islice_extended at 0x0608B338>>
+        """
+        list(query[5:0:-1])
+        """out:
+        [5, 4, 3, 2, 1]
+        """
         ```
-- Initializing other objects that used iterators/iterables (it is still almost same mechanism like normal iteration)
+- Initializing other objects that used iterators/iterables (it is still almost same mechanism like normal iteration):
     ```python
     query1 = ObjectQuery(range(10))
     query2 = ObjectQuery(range(10))
 
     list(query1)
+    """out:
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    """
     tuple(query2)
+    """out:
+    (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+    """
     ```
 
+### User cases
 
 Let's consider fallowing code for populating faked humans:
 
@@ -128,7 +164,7 @@ def make_random_human(name):
 Creating 10 random humans:
 ```python
 humans = [make_random_human(i) for i in range(10)]
-"""
+"""out:
 [{'name': 0, 'age': 24, 'sex': 'female', 'height': 161, 'weight': 71},
  {'name': 1, 'age': 33, 'sex': 'female', 'height': 205, 'weight': 67},
  {'name': 2, 'age': 45, 'sex': 'female', 'height': 186, 'weight': 74},
@@ -148,7 +184,7 @@ Finding peoples from age between [30; 75). To that we will used specialized comp
 
 ```python
 list(ObjectQuery(humans).filter(age__ge=30, age__lt=75))
-"""
+"""out:
 [{'name': 1, 'age': 33, 'sex': 'female', 'height': 205, 'weight': 67},
  {'name': 2, 'age': 45, 'sex': 'female', 'height': 186, 'weight': 74},
  {'name': 3, 'age': 48, 'sex': 'female', 'height': 173, 'weight': 78},
@@ -160,10 +196,10 @@ list(ObjectQuery(humans).filter(age__ge=30, age__lt=75))
 """
 ```
 
-Excluding males:
+We can also excluding males in similar way:
 ```python
 list(ObjectQuery(humans).exclude(sex="male"))
-"""
+"""out:
 [{'name': 0, 'age': 24, 'sex': 'female', 'height': 161, 'weight': 71},
  {'name': 1, 'age': 33, 'sex': 'female', 'height': 205, 'weight': 67},
  {'name': 2, 'age': 45, 'sex': 'female', 'height': 186, 'weight': 74},
@@ -178,7 +214,7 @@ list(ObjectQuery(humans).exclude(sex="male"))
 Ordering by `sex` attributes in ascending order:
 ```python
 list(ObjectQuery(humans).order_by("sex"))
-"""
+"""out
 [{'name': 0, 'age': 24, 'sex': 'female', 'height': 161, 'weight': 71},
  {'name': 1, 'age': 33, 'sex': 'female', 'height': 205, 'weight': 67},
  {'name': 2, 'age': 45, 'sex': 'female', 'height': 186, 'weight': 74},
@@ -195,7 +231,7 @@ list(ObjectQuery(humans).order_by("sex"))
 Ordering by `sex` attributes in descending order:
 ```python
 list(ObjectQuery(humans).order_by("-sex"))
-"""
+"""out
 [{'name': 4, 'age': 73, 'sex': 'male', 'height': 174, 'weight': 62},
  {'name': 5, 'age': 75, 'sex': 'male', 'height': 189, 'weight': 77},
  {'name': 6, 'age': 64, 'sex': 'male', 'height': 179, 'weight': 63},
@@ -212,7 +248,7 @@ list(ObjectQuery(humans).order_by("-sex"))
 Ordering by multiple attributes:
 ```python
 list(ObjectQuery(humans).order_by("-sex", "height"))
-"""
+"""out:
 [{'name': 5, 'age': 75, 'sex': 'male', 'height': 189, 'weight': 77},
  {'name': 8, 'age': 64, 'sex': 'male', 'height': 188, 'weight': 72},
  {'name': 6, 'age': 64, 'sex': 'male', 'height': 179, 'weight': 63},
@@ -231,7 +267,7 @@ list(ObjectQuery(humans).order_by("-sex", "height"))
 If some attributes worth of filtering and ordering are not available by hand
 we can calculate them on the fly:
 ```python
-# Sorry by example if someone feels offended
+# Sorry for example if someone feels offended
 root_query = ObjectQuery(humans)
 
 only_females = root_query.filter(sex="female")  # reduce objects for annotation calculation
@@ -239,7 +275,7 @@ bmi_annotated_females = only_females.annotate(bmi=lambda obj: obj.weight / (obj.
 overweight_females = bmi_annotated_females.filter(bmi__gt=25)
 overweight_females_ordered_by_age = overweight_females.order_by("age")
 list(overweight_females_ordered_by_age)
-"""
+"""out:
 [{'name': 0, 'age': 24, 'sex': 'female', 'height': 161, 'weight': 71, 'bmi': 27.390918560240728},
  {'name': 7, 'age': 35, 'sex': 'female', 'height': 170, 'weight': 75, 'bmi': 25.95155709342561},
  {'name': 3, 'age': 48, 'sex': 'female', 'height': 173, 'weight': 78, 'bmi': 26.061679307694877}]
@@ -257,20 +293,20 @@ query1 = root_query.filter(weight__gt=75)
 query2 = root_query.filter(weight__in=[78, 62])
 
 list(query1)
-"""
+"""out:
 [{'name': 3, 'age': 48, 'sex': 'female', 'height': 173, 'weight': 78},
  {'name': 9, 'age': 43, 'sex': 'female', 'height': 198, 'weight': 78}]
 """
 
 list(query2)
-"""
+"""out:
 [{'name': 3, 'age': 48, 'sex': 'female', 'height': 173, 'weight': 78},
  {'name': 4, 'age': 73, 'sex': 'male', 'height': 174, 'weight': 62},
  {'name': 9, 'age': 43, 'sex': 'female', 'height': 198, 'weight': 78}]
 """
 
 list(root_query)
-"""
+"""out:
 [{'name': 1, 'age': 33, 'sex': 'female', 'height': 205, 'weight': 67},
  {'name': 2, 'age': 45, 'sex': 'female', 'height': 186, 'weight': 74},
  {'name': 3, 'age': 48, 'sex': 'female', 'height': 173, 'weight': 78},
@@ -292,11 +328,11 @@ copy = root_query.all()
 
 ### Reversing
 
-You can also reverse query, but remember that it will evaluated query:
+You can also reverse query, but remember that it will evaluate query:
 ```python
 root_query = ObjectQuery(humans).reverse()
 list(root_query)
-"""
+"""out:
 [{'name': 9, 'age': 43, 'sex': 'female', 'height': 198, 'weight': 78},
  {'name': 8, 'age': 64, 'sex': 'male', 'height': 188, 'weight': 72},
  {'name': 7, 'age': 35, 'sex': 'female', 'height': 170, 'weight': 75},
@@ -322,7 +358,7 @@ both1 = (males | females)
 both2 = males.union(females)
 
 list(both1)
-"""
+"""out:
 [{'name': 4, 'age': 73, 'sex': 'male', 'height': 174, 'weight': 62},
  {'name': 5, 'age': 75, 'sex': 'male', 'height': 189, 'weight': 77},
  {'name': 6, 'age': 64, 'sex': 'male', 'height': 179, 'weight': 63},
@@ -335,7 +371,7 @@ list(both1)
  {'name': 9, 'age': 43, 'sex': 'female', 'height': 198, 'weight': 78}]
 """
 list(both2)
-"""
+"""out:
 [{'name': 4, 'age': 73, 'sex': 'male', 'height': 174, 'weight': 62},
  {'name': 5, 'age': 75, 'sex': 'male', 'height': 189, 'weight': 77},
  {'name': 6, 'age': 64, 'sex': 'male', 'height': 179, 'weight': 63},
@@ -348,8 +384,6 @@ list(both2)
  {'name': 9, 'age': 43, 'sex': 'female', 'height': 198, 'weight': 78}]
 """
 ```
-
-
 
 ## Supported Comparators
 
@@ -366,6 +400,15 @@ Project supports many comparator that can be chosen as postfix for lookup:
 - `lt` makes `a < b`
 - `lte` makes `a <= b`
 - `le` makes `a <= b`
+
+## TODOs
+
+- The `asc()` and `desc()` methods which works same as `order_by()` but with specified order in advance.
+- The `unique_justseen()` and `unique_everseen()` methods to remove duplicates.
+Comparison realized by passed attributes or delegated to objects equality `__eq__`.
+- The `intersection()` method for finding common objects in two queries.
+Comparison realized by passed attributes or delegated to objects equality `__eq__`.
+- The `__len__` and `__getitem__` improvement for evaluating query only once per life cycle.
 
 ## Contribution
 
