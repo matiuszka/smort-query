@@ -2,7 +2,7 @@ from setuptools import setup
 
 version = "1.0.0"
 
-with open("README.MD") as readme_file:
+with open("README.md") as readme_file:
     readme = readme_file.read()
 
 with open("requirements.txt") as req_file:
