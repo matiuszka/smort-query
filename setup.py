@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "1.0.0"
+version = "1.0.1"
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
@@ -30,6 +30,6 @@ setup(
     package_dir={"smort_query": "smort_query"},
     include_package_data=True,
     install_requires=requirements,
-    license="GPLv3",
+    license="MIT",
     zip_safe=False,
 )
