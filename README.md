@@ -1,5 +1,6 @@
 # Smort Query
 [![PyPI version](https://badge.fury.io/py/smort-query.svg)](https://badge.fury.io/py/smort-query)
+[![Build Status](https://travis-ci.org/matiuszka/smort-query.svg?branch=master)](https://travis-ci.org/matiuszka/smort-query)
 [![codecov](https://codecov.io/gh/matiuszka/smort-query/branch/master/graph/badge.svg)](https://codecov.io/gh/matiuszka/smort-query)
 
 ![alt text](https://media3.giphy.com/media/hFROvOhBPQVRm/giphy.gif "Smort")
