@@ -62,11 +62,11 @@ class TestIteration:
 
 class TestLen:
     def test_len(self):
-        l = [1]
-        list_iter = iter(l)
+        listt = [1]
+        list_iter = iter(listt)
         query = ObjectQuery(list_iter)
 
-        assert len(query) == len(l)
+        assert len(query) == len(listt)
 
         with pytest.raises(StopIteration):
             next(list_iter)
