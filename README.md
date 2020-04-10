@@ -407,6 +407,7 @@ Project supports many comparator that can be chosen as postfix for lookup:
 
 ## TODOs
 
+- Sphinx documentation.
 - The `asc()` and `desc()` methods which works same as `order_by()` but with specified order in advance.
 - The `unique_justseen()` and `unique_everseen()` methods to remove duplicates.
 Comparison realized by passed attributes or delegated to objects equality `__eq__`.
