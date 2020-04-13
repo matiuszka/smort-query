@@ -51,7 +51,8 @@ class ObjectQuery:
             self.objects_source = iter(objects)
         except TypeError:
             raise TypeError(
-                f"The objects parameter has to be an iterator or an iterable, but is {type(objects)}."
+                f"The objects parameter has to be an iterator or an iterable,"
+                f" but is {type(objects)}."
             )
 
     def __repr__(self) -> str:
@@ -198,7 +199,8 @@ class ObjectQuery:
         return operator.attrgetter(".".join(lookup_parts)), comparator
 
     @classmethod
-    def _filter_or_exclude(cls, objects_source: Iterator, negate: bool, **lookups: dict) -> Iterator:
+    def _filter_or_exclude(cls, objects_source: Iterator,
+                           negate: bool, **lookups: dict) -> Iterator:
         """
         Yields objects that match or does not match(depends on `negate`) lookups from
         `objects_source`.
