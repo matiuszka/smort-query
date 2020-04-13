@@ -199,8 +199,9 @@ class ObjectQuery:
         return operator.attrgetter(".".join(lookup_parts)), comparator
 
     @classmethod
-    def _filter_or_exclude(cls, objects_source: Iterator,
-                           negate: bool, **lookups: dict) -> Iterator:
+    def _filter_or_exclude(
+        cls, objects_source: Iterator, negate: bool, **lookups: dict
+    ) -> Iterator:
         """
         Yields objects that match or does not match(depends on `negate`) lookups from
         `objects_source`.
