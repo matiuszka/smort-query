@@ -47,14 +47,12 @@ class ObjectQuery:
         """
         self.objects_source: Iterator
 
-        if isinstance(objects, Iterable):
+        try:
             self.objects_source = iter(objects)
-        elif isinstance(objects, Iterable):
-            self.objects_source = objects
-        else:
+        except TypeError:
             raise TypeError(
-                f"The objects parameter has to be an iterator or an iterable,\
-                  but is {type(objects)}."
+                f"The objects parameter has to be an iterator or an iterable,"
+                f" but is {type(objects)}."
             )
 
     def __repr__(self) -> str:
@@ -78,7 +76,7 @@ class ObjectQuery:
 
         Returns
         -------
-        `Any`
+        Any
             Anything that was in object_source.
 
         Examples
@@ -126,6 +124,11 @@ class ObjectQuery:
         ----------
         key: Union[int, slice]
             Key represents index of item or slice object.
+
+        Returns
+        -------
+        Union [Any, ObjectQuery]
+            Returns item or list of items.
 
         Examples
         --------
@@ -196,9 +199,8 @@ class ObjectQuery:
         return operator.attrgetter(".".join(lookup_parts)), comparator
 
     @classmethod
-    def _filter_or_exclude(
-        cls, objects_source: Iterator, negate: bool, **lookups: dict
-    ) -> Iterator:
+    def _filter_or_exclude(cls, objects_source: Iterator,
+                           negate: bool, **lookups: dict) -> Iterator:
         """
         Yields objects that match or does not match(depends on `negate`) lookups from
         `objects_source`.
