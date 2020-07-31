@@ -2,7 +2,7 @@
 ipython==7.16.1
 black==19.10b0
 flake8==3.8.3
-pytest==5.4.3
+pytest==6.0.1
 pytest-cov==2.10.0
 twine==3.2.0
 wheel==0.34.2
