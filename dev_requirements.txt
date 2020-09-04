@@ -1,5 +1,6 @@
 -r requirements.txt
-ipython==7.18.1
+ipython==7.18.1; python_version >= "3.7"
+ipython==7.16.1; python_version < "3.7"
 black==19.10b0
 flake8==3.8.3
 pytest==6.0.1
