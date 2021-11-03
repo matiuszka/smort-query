@@ -1,18 +1,18 @@
 # Smort Query
+
 [![PyPI version](https://badge.fury.io/py/smort-query.svg)](https://badge.fury.io/py/smort-query)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/smort-query.svg)](https://pypi.org/project/smort-query)
-[![Build Status](https://travis-ci.org/matiuszka/smort-query.svg?branch=master)](https://travis-ci.org/matiuszka/smort-query)
+![Build Status](https://github.com/matiuszka/smort-query/actions/workflows/checks.yml/badge.svg)
 [![codecov](https://codecov.io/gh/matiuszka/smort-query/branch/master/graph/badge.svg)](https://codecov.io/gh/matiuszka/smort-query)
 [![PyPI download total](https://img.shields.io/pypi/dw/smort-query.svg)](https://pypi.python.org/pypi/smort-query/)
-
 
 ![alt text](https://media3.giphy.com/media/hFROvOhBPQVRm/giphy.gif "Smort")
 
 Lazy evaluated query implementation for searching through Python objects
 inspired by [Django QuerySets](https://docs.djangoproject.com/en/3.0/ref/models/querysets/#queryset-api-reference).
 
- - GitHub: https://github.com/matiuszka/smort-query
- - PyPi: https://pypi.org/project/smort-query
+- GitHub: https://github.com/matiuszka/smort-query
+- PyPi: https://pypi.org/project/smort-query
 
 ## Rationale
 
@@ -61,79 +61,87 @@ The most important thing is that `ObjectQuery` instances are unevaluated - it me
 they are not loading an objects to the memory even when we are chaining them.
 
 Query sets can be evaluated in several ways:
+
 - Iteration:
+
+  ```python
+  query = ObjectQuery(range(5))
+
+  for obj in query:
+      print(obj)
+
+  """out:
+  1
+  2
+  3
+  4
+  5
+  """
+  ```
+
+- Checking length:
+
+  ```python
+  query = ObjectQuery(range(10))
+
+  len(query)
+  """out:
+  10
+  """
+  ```
+
+- Reversing query:
+
+  ```python
+  query = ObjectQuery(range(10))
+
+  query.reverse()
+  """out:
+  <ObjectQuery for <reversed object at 0x04E8B460>>
+  """
+
+  list(list(query.reverse()))
+  """out
+  [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+  """
+  ```
+
+- Getting items:
+  - Getting by index evaluates query:
     ```python
-    query = ObjectQuery(range(5))
-
-    for obj in query:
-        print(obj)
-
+    query = ObjectQuery(range(10))
+    query[5]
     """out:
-    1
-    2
-    3
-    4
     5
     """
     ```
-- Checking length:
+  - But slices not! They creates another query.
     ```python
     query = ObjectQuery(range(10))
-
-    len(query)
+    query[5:0:-1]
     """out:
-    10
+    <ObjectQuery for <generator object islice_extended at 0x0608B338>>
+    """
+    list(query[5:0:-1])
+    """out:
+    [5, 4, 3, 2, 1]
     """
     ```
-- Reversing query:
-    ```python
-    query = ObjectQuery(range(10))
-
-    query.reverse()
-    """out:
-    <ObjectQuery for <reversed object at 0x04E8B460>>
-    """
-
-    list(list(query.reverse()))
-    """out
-    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-    """
-    ```
-- Getting items:
-    - Getting by index evaluates query:
-        ```python
-        query = ObjectQuery(range(10))
-        query[5]
-        """out:
-        5
-        """
-        ```
-    - But slices not! They creates another query.
-        ```python
-        query = ObjectQuery(range(10))
-        query[5:0:-1]
-        """out:
-        <ObjectQuery for <generator object islice_extended at 0x0608B338>>
-        """
-        list(query[5:0:-1])
-        """out:
-        [5, 4, 3, 2, 1]
-        """
-        ```
 - Initializing other objects that used iterators/iterables (it is still almost same mechanism like normal iteration):
-    ```python
-    query1 = ObjectQuery(range(10))
-    query2 = ObjectQuery(range(10))
 
-    list(query1)
-    """out:
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    """
-    tuple(query2)
-    """out:
-    (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-    """
-    ```
+  ```python
+  query1 = ObjectQuery(range(10))
+  query2 = ObjectQuery(range(10))
+
+  list(query1)
+  """out:
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  """
+  tuple(query2)
+  """out:
+  (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+  """
+  ```
 
 ### User cases
 
@@ -166,6 +174,7 @@ def make_random_human(name):
 ```
 
 Creating 10 random humans:
+
 ```python
 humans = [make_random_human(i) for i in range(10)]
 """out:
@@ -201,6 +210,7 @@ list(ObjectQuery(humans).filter(age__ge=30, age__lt=75))
 ```
 
 We can also excluding males in similar way:
+
 ```python
 list(ObjectQuery(humans).exclude(sex="male"))
 """out:
@@ -216,6 +226,7 @@ list(ObjectQuery(humans).exclude(sex="male"))
 ### Ordering
 
 Ordering by `sex` attributes in ascending order:
+
 ```python
 list(ObjectQuery(humans).order_by("sex"))
 """out
@@ -233,6 +244,7 @@ list(ObjectQuery(humans).order_by("sex"))
 ```
 
 Ordering by `sex` attributes in descending order:
+
 ```python
 list(ObjectQuery(humans).order_by("-sex"))
 """out
@@ -250,6 +262,7 @@ list(ObjectQuery(humans).order_by("-sex"))
 ```
 
 Ordering by multiple attributes:
+
 ```python
 list(ObjectQuery(humans).order_by("-sex", "height"))
 """out:
@@ -270,6 +283,7 @@ list(ObjectQuery(humans).order_by("-sex", "height"))
 
 If some attributes worth of filtering and ordering are not available by hand
 we can calculate them on the fly:
+
 ```python
 # Sorry for example if someone feels offended
 root_query = ObjectQuery(humans)
@@ -323,8 +337,9 @@ list(root_query)
 ```
 
 But sometimes evaluating some query in middle of chain may break it, so when you explicitly
-want to save somewhere copy of query and be sure that further actions on `root` will not 
+want to save somewhere copy of query and be sure that further actions on `root` will not
 affect on query, you can do:
+
 ```python
 root_query = ObjectQuery(humans)
 copy = root_query.all()
@@ -333,6 +348,7 @@ copy = root_query.all()
 ### Reversing
 
 You can also reverse query, but remember that it will evaluate query:
+
 ```python
 root_query = ObjectQuery(humans).reverse()
 list(root_query)
@@ -351,6 +367,7 @@ list(root_query)
 ```
 
 ### OR
+
 Bitwise OR combines two queries together. Same as `union` method.
 Note that after ORing two queries or even more, ordering might be needed:
 
@@ -410,9 +427,9 @@ Project supports many comparator that can be chosen as postfix for lookup:
 - Sphinx documentation.
 - The `asc()` and `desc()` methods which works same as `order_by()` but with specified order in advance.
 - The `unique_justseen()` and `unique_everseen()` methods to remove duplicates.
-Comparison realized by passed attributes or delegated to objects equality `__eq__`.
+  Comparison realized by passed attributes or delegated to objects equality `__eq__`.
 - The `intersection()` method for finding common objects in two queries.
-Comparison realized by passed attributes or delegated to objects equality `__eq__`.
+  Comparison realized by passed attributes or delegated to objects equality `__eq__`.
 - The `__len__` and `__getitem__` improvement for evaluating query only once per life cycle.
 
 ## Contribution

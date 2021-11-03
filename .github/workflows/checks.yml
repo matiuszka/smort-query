@@ -1,0 +1,31 @@
+name: Checks
+
+on: push
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: build
+        run: pip install -r dev_requirements.txt
+      - name: check formatting
+        run: black . --check
+      - name: check linting
+        run: flake8 .
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: build
+        run: pip install -r dev_requirements.txt
+      - name: tests
+        run: pytest --cov -vv .
+      - name: codecov
+        run: bash <(curl -s https://codecov.io/bash)

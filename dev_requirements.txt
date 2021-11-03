@@ -1,4 +1,4 @@
--r requirements.txt
+-e .
 ipython==7.18.1; python_version >= "3.7"
 ipython==7.16.1; python_version < "3.7"
 black==19.10b0
