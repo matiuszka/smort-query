@@ -1,12 +1,9 @@
 from setuptools import setup
 
-version = "1.1.1"
+version = "1.1.2"
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
-
-with open("requirements.txt") as req_file:
-    requirements = req_file.readlines()
 
 setup(
     name="smort-query",
@@ -23,13 +20,14 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     url="https://github.com/matiuszka/smort-query",
     packages=["smort_query",],
     python_requires=">=3.6",
     package_dir={"smort_query": "smort_query"},
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=["more_itertools~=8.0"],
     license="MIT",
     zip_safe=False,
 )
