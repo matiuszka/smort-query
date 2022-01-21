@@ -1,5 +1,5 @@
 -e .
-ipython==8.0.0; python_version >= "3.7"
+ipython==8.0.1; python_version >= "3.7"
 ipython==8.0.0; python_version < "3.7"
 black==19.10b0
 flake8==4.0.1
