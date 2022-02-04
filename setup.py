@@ -15,7 +15,7 @@ setup(
     author_email="nowak.mateusz@hotmail.com",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
@@ -23,7 +23,9 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     url="https://github.com/matiuszka/smort-query",
-    packages=["smort_query",],
+    packages=[
+        "smort_query",
+    ],
     python_requires=">=3.6",
     package_dir={"smort_query": "smort_query"},
     include_package_data=True,
