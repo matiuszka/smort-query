@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import operator
 from itertools import chain, tee
-from typing import Any, Iterable, Iterator, Tuple, Union
+from typing import Any, Callable, Iterable, Iterator, Tuple, Union
 
 from more_itertools import islice_extended
 
@@ -58,7 +60,7 @@ class ObjectQuery:
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} for {self.objects_source}>"
 
-    def __iter__(self) -> "ObjectQuery":
+    def __iter__(self) -> ObjectQuery:
         """
         Makes it an iterable.
 
@@ -115,7 +117,7 @@ class ObjectQuery:
         """
         return len(self._evaluate_query())
 
-    def __getitem__(self, key: Union[int, slice]) -> Union[Any, "ObjectQuery"]:
+    def __getitem__(self, key: Union[int, slice]) -> Union[Any, ObjectQuery]:
         """
         If key is an integer it evaluates query and returns item.
         If key is a slice it returns another unevaluated ObjectQuery.
@@ -145,7 +147,7 @@ class ObjectQuery:
 
         return self._evaluate_query()[key]
 
-    def __or__(self, other: "ObjectQuery") -> "ObjectQuery":
+    def __or__(self, other: ObjectQuery) -> ObjectQuery:
         """
         Chains two queries by creating new one.
 
@@ -178,13 +180,13 @@ class ObjectQuery:
         return setattr(getter(obj) if current_attr else obj, nested_attr, value)
 
     @classmethod
-    def _parse_lookup_string(cls, lookup_string: str) -> Tuple[callable, callable]:
+    def _parse_lookup_string(cls, lookup_string: str) -> Tuple[Callable, Callable]:
         """
         Parses lookup string into getter function and comparator function.
 
         Returns
         -------
-        Tuple[callable, callable]
+        Tuple[Callable, Callable]
             Getter function and coparator.
 
         """
@@ -192,7 +194,7 @@ class ObjectQuery:
         comparator = operator.eq
 
         if comparator_candidate in cls._COMPARATORS:
-            comparator = cls._COMPARATORS.get(comparator_candidate)
+            comparator = cls._COMPARATORS[comparator_candidate]
         else:
             lookup_parts.append(comparator_candidate)
 
@@ -239,7 +241,7 @@ class ObjectQuery:
             else:
                 yield obj
 
-    def _copy(self) -> "ObjectQuery":
+    def _copy(self) -> ObjectQuery:
         """
         Makes copy of current object. Used for creation new queries
 
@@ -267,7 +269,7 @@ class ObjectQuery:
 
         return evaluated_query
 
-    def all(self) -> "ObjectQuery":
+    def all(self) -> ObjectQuery:
         """
         Returns a copy of current query.
 
@@ -287,7 +289,7 @@ class ObjectQuery:
         """
         return self._copy()
 
-    def filter(self, **lookups: dict) -> "ObjectQuery":
+    def filter(self, **lookups: dict) -> ObjectQuery:
         """
         Filters objects by passed `lookups` and creates new query from it.
 
@@ -312,7 +314,7 @@ class ObjectQuery:
 
         return copy
 
-    def exclude(self, **lookups: dict) -> "ObjectQuery":
+    def exclude(self, **lookups: dict) -> ObjectQuery:
         """
         Excludes objects that match passed `lookups`.
 
@@ -337,13 +339,13 @@ class ObjectQuery:
 
         return copy
 
-    def order_by(self, *attributes: tuple) -> "ObjectQuery":
+    def order_by(self, *attributes: str) -> ObjectQuery:
         """
         Sorts query in order of chosen attributes passed as `attributes` parameter.
 
         Parameters
         ----------
-        *attributes: tuple
+        *attributes: str
             Attributes that will be used for ordering. Addint `-` sign at prefix makes
             ordering descending, ascending otherwise.
 
@@ -365,13 +367,13 @@ class ObjectQuery:
             attrs.append(attr.replace("__", "."))
 
         getter = operator.attrgetter(*attrs)
-        copy.objects_source = sorted(
-            copy.objects_source, key=lambda obj: getter(obj), reverse=reverse
+        copy.objects_source = iter(
+            sorted(copy.objects_source, key=lambda obj: getter(obj), reverse=reverse)
         )
 
         return copy
 
-    def reverse(self) -> "ObjectQuery":
+    def reverse(self) -> ObjectQuery:
         """
         Creates a new reversed query. Unfortunately we cannot reverse iterator without
         evaluating it whole. So if you need to please do it at last step in chain.
@@ -387,7 +389,7 @@ class ObjectQuery:
 
         return copy
 
-    def annotate(self, **annotations: dict) -> "ObjectQuery":
+    def annotate(self, **annotations: Callable) -> ObjectQuery:
         """
         Calculates and sets new attributes by passed callables.
         New attribute name is taken from key attribute name.
@@ -419,7 +421,7 @@ class ObjectQuery:
 
         return copy
 
-    def union(self, other: "ObjectQuery") -> "ObjectQuery":
+    def union(self, other: ObjectQuery) -> ObjectQuery:
         """
         Chains two queries by creating new one. Same as OR.
 
