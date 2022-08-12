@@ -1,13 +1,12 @@
 from setuptools import setup
-
-version = "1.2.0"
+from smort_query import __version__
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
 setup(
     name="smort-query",
-    version=version,
+    version=__version__,
     description=("Django like query engine for any objects."),
     long_description=readme,
     long_description_content_type="text/markdown",

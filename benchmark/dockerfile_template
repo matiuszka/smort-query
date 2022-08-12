@@ -1,0 +1,43 @@
+FROM ubuntu:xenial
+ARG BUILDDIR=_BUILD_DIR_
+ARG PYTHON=_PYTHON_VERSION_
+ARG SMORT=_SMORT_DIR_
+WORKDIR ${BUILDDIR}
+
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y \
+        wget \
+        gcc \
+        make \
+        libbz2-dev \
+        libdb4o-cil-dev \
+        libffi-dev \
+        libgdbm-dev \
+        libgdm-dev \
+        liblzma-dev \
+        libncurses5-dev \
+        libncursesw5-dev \
+        libpcap-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libtk8.5 \
+        openssl \
+        uuid-dev \
+        zlib1g-dev
+
+RUN wget https://www.python.org/ftp/python/${PYTHON}/Python-${PYTHON}.tgz
+RUN tar zxvf Python-${PYTHON}.tgz
+RUN cd Python-${PYTHON} && \
+    ./configure && \
+    make && \
+    make install && \
+    rm -rf ${BUILDDIR}
+
+RUN mkdir ${SMORT}
+COPY . ${SMORT}
+
+RUN cd ${SMORT} && \
+    pip3 install -U pip && \
+    pip install more_itertools && \
+    pip install -r dev_requirements.txt
