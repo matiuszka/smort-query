@@ -39,5 +39,4 @@ COPY . ${SMORT}
 
 RUN cd ${SMORT} && \
     pip3 install -U pip && \
-    pip install more_itertools && \
     pip install -r dev_requirements.txt
