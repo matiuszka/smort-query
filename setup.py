@@ -1,5 +1,9 @@
 from setuptools import setup
-from smort_query import __version__
+
+with open("smort_query/__init__.py", "r") as f:
+    lines = f.readlines()
+    ver = filter(lambda l: l.startswith("__version__"), lines)
+    __version__ = next(ver).split("=")[-1].strip().strip('"')
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
