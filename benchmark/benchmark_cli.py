@@ -6,7 +6,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from pathlib import Path
 from textwrap import dedent
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 
 from benchmark import project_name
 from benchmark.testlib import (
@@ -22,7 +22,7 @@ from benchmark.testlib import (
 arg_parser = ArgumentParser(
     prog=f"python3 {Path(__file__).name}",
     description=f"Make benchmark tests for {project_name.replace(' ', '_')} package",
-    epilog=f"v0.1.0, python {python_ver}",
+    epilog=f"v0.1.1, python {python_ver}",
     formatter_class=RawTextHelpFormatter,
 )
 
@@ -118,9 +118,8 @@ if args.show or (args.img is not None):
         ObjectQuery=oq_performance,
         DataFrame=df_performance,
     )
-
-if args.img is not None:
-    fig.savefig(args.img, bbox_inches="tight", pad_inches=0.2, dpi=120)
+    if args.img is not None:
+        fig.savefig(args.img, bbox_inches="tight", pad_inches=0.2, dpi=120)
 
 if args.show:
     plt.show()

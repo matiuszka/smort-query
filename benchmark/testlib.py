@@ -20,7 +20,7 @@ from textwrap import dedent
 from timeit import repeat
 from typing import Callable, List
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # type: ignore
 from pandas import DataFrame
 from pandas import __version__ as pd_ver
 from smort_query import ObjectQuery
@@ -90,7 +90,10 @@ def execute_data_frame() -> str:
 
 
 def test_filtering(number: int, setup: Callable, execute_code: Callable) -> float:
-    """Test efficiency of filtering by different objects for a given number of items to filter."""
+    """
+    Test efficiency of filtering by different objects for a given number of items
+    to filter.
+    """
     setup_code = setup(number)
     test_code = execute_code()
     time_execution = repeat(
@@ -115,7 +118,10 @@ def tested_version() -> str:
 def plot_results(
     size: list, title: str, version: str, **kwargs: List[float]
 ) -> plt.Figure:
-    """Plot comparison of time execution for two different objects with variable size of input data."""
+    """
+    Plot comparison of time execution for two different objects with variable
+    size of input data.
+    """
     colors = ("blue", "orange")
 
     fig, ax = plt.subplots()
