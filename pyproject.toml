@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "smort-query"
+version = "2.0.0-alpha.0"
+description = "Lazy evaluated query implementation for searching through Python objects inspired by Django QuerySets."
+license = "MIT"
+authors = ["Mateusz Nowak <nowak.mateusz@hotmail.com>"]
+readme = "README.md"
+homepage = "https://github.com/matiuszka/smort-query"
+repository = "https://github.com/matiuszka/smort-query"
+documentation = "https://github.com/matiuszka/smort-query"
+keywords = ["query", "search"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.6.2,<4.0"
+more-itertools = "~8.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+black = "^22.6.0"
+flake8 = "^5.0.4"
+isort = "^5.10.1"
+pytest-cov = "^3.0.0"
+mypy = "^0.971"
+Flake8-pyproject = "^1.1.0"
+
+[tool.flake8]
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    "old",
+    "build",
+    "dist",
+    ".history",
+    ".env",
+]
+ignore = ["BLK100", "E231", "W503", "D102", "D103"]
+max-line-length = 88
+
+[tool.pytest]
+testpaths = "tests"

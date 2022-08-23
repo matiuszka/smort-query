@@ -2,7 +2,6 @@ from random import shuffle
 from typing import Iterable, Iterator
 
 import pytest
-
 from smort_query import ObjectQuery
 
 
