@@ -9,7 +9,7 @@
 ![alt text](https://media3.giphy.com/media/hFROvOhBPQVRm/giphy.gif "Smort")
 
 Lazy evaluated query implementation for searching through Python objects
-inspired by [Django QuerySets](https://docs.djangoproject.com/en/3.0/ref/models/querysets/#queryset-api-reference).
+inspired by [Django QuerySets](https://docs.djangoproject.com/en/4.0/ref/models/querysets/#queryset-api).
 
 - GitHub: https://github.com/matiuszka/smort-query
 - PyPi: https://pypi.org/project/smort-query
@@ -18,7 +18,7 @@ inspired by [Django QuerySets](https://docs.djangoproject.com/en/3.0/ref/models/
 
 In many moments of our programing tasks we have to filter iterables in
 search of the right objects in right order.
-I realized that most of the time code looks almost the same, but what kind of interface will be easiest to use ? In that moment I figured out that [Django QuerySets](https://docs.djangoproject.com/en/3.0/ref/models/querysets/#queryset-api-reference) implementation is kinda handy and well known.
+I realized that most of the time code looks almost the same, but what kind of interface will be easiest to use ? In that moment I figured out that [Django QuerySets](https://docs.djangoproject.com/en/4.0/ref/models/querysets/#queryset-api) implementation is kinda handy and well known.
 
 So I decided to write small query engine that interface will be similar to Django one.
 But it will work for Python objects. Additional assumption was that it will be lazy evaluated to

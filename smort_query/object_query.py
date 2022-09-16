@@ -170,7 +170,7 @@ class ObjectQuery:
     @staticmethod
     def _setattr(obj: Any, attr: str, value: Any) -> None:
         """
-        Recursively sets attrbiutes for objects.
+        Recursively sets attributes for objects.
         Each nested object has to be separated by `__` signs.
 
         """
@@ -187,7 +187,7 @@ class ObjectQuery:
         Returns
         -------
         Tuple[Callable, Callable]
-            Getter function and coparator.
+            Getter function and comparator.
 
         """
         *lookup_parts, comparator_candidate = lookup_string.split("__")
