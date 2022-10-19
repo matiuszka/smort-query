@@ -32,7 +32,7 @@ setup(
     python_requires=">=3.6",
     package_dir={"smort_query": "smort_query"},
     include_package_data=True,
-    install_requires=["more_itertools~=8.0"],
+    install_requires=["more_itertools~=9.0"],
     license="MIT",
     zip_safe=False,
 )
