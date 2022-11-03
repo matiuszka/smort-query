@@ -1,6 +1,6 @@
 -e .
-ipython==8.6.0; python_version >= "3.7"
-ipython==8.6.0; python_version < "3.7"
+ipython==8.5.0; python_version >= "3.7"
+ipython==8.5.0; python_version < "3.7"
 black==22.10.0
 isort==5.10.1
 flake8==5.0.4
