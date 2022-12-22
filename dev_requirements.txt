@@ -2,7 +2,7 @@
 ipython==8.7.0; python_version >= "3.7"
 ipython==8.7.0; python_version < "3.7"
 black==22.12.0
-isort==5.11.3
+isort==5.11.4
 flake8==5.0.4
 pytest==7.2.0
 pytest-cov==4.0.0
