@@ -11,4 +11,4 @@ wheel==0.40.0
 matplotlib==3.7.1
 mypy==1.2.0
 pandas==2.0.2
-pandas-stubs==2.0.1.230501
+pandas-stubs==2.0.2.230605
