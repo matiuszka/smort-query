@@ -10,5 +10,5 @@ twine==4.0.2
 wheel==0.40.0
 matplotlib==3.7.1
 mypy==1.4.1
-pandas==2.0.2
+pandas==2.0.3
 pandas-stubs==2.0.2.230605
