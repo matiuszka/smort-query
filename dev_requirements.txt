@@ -8,7 +8,7 @@ pytest==7.4.0
 pytest-cov==4.1.0
 twine==4.0.2
 wheel==0.40.0
-matplotlib==3.7.1
+matplotlib==3.7.2
 mypy==1.4.1
 pandas==2.0.3
 pandas-stubs==2.0.2.230605
