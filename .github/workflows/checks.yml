@@ -29,6 +29,6 @@ jobs:
         run: uv run pytest --cov -vv .
       - name: upload coverage
         if: matrix.python-version == '3.13'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           fail_ci_if_error: false
