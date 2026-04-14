@@ -4,7 +4,7 @@
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/smort-query.svg)](https://pypi.org/project/smort-query)
 ![Build Status](https://github.com/matiuszka/smort-query/actions/workflows/checks.yml/badge.svg)
 [![codecov](https://codecov.io/gh/matiuszka/smort-query/branch/master/graph/badge.svg)](https://codecov.io/gh/matiuszka/smort-query)
-[![PyPI download total](https://img.shields.io/pypi/dw/smort-query.svg)](https://pypi.python.org/pypi/smort-query/)
+[![PyPI downloads weekly](https://img.shields.io/pypi/dw/smort-query.svg)](https://pypi.org/project/smort-query/)
 
 ![alt text](https://media3.giphy.com/media/hFROvOhBPQVRm/giphy.gif "Smort")
 
@@ -13,6 +13,28 @@ inspired by [Django QuerySets](https://docs.djangoproject.com/en/5.2/ref/models/
 
 - GitHub: https://github.com/matiuszka/smort-query
 - PyPi: https://pypi.org/project/smort-query
+
+## Table of Contents
+
+- [Rationale](#rationale)
+- [Lookup format](#lookup-format)
+- [Installation](#installation)
+- [Importing](#importing)
+- [How it works?](#how-it-works)
+  - [Basics](#basics)
+  - [Use cases](#use-cases)
+  - [Filtering and excluding](#filtering-and-excluding)
+  - [Ordering](#ordering)
+  - [Annotate](#annotate)
+  - [Copying](#copying)
+  - [Reversing](#reversing)
+  - [OR](#or)
+  - [Ascending and descending ordering](#ascending-and-descending-ordering)
+  - [Removing duplicates](#removing-duplicates)
+  - [Intersection](#intersection)
+- [Supported Comparators](#supported-comparators)
+- [Performance & When to Use](#performance--when-to-use)
+- [Contribution](#contribution)
 
 ## Rationale
 
@@ -71,11 +93,11 @@ Query sets can be evaluated in several ways:
       print(obj)
 
   """out:
+  0
   1
   2
   3
   4
-  5
   """
   ```
 
@@ -553,10 +575,6 @@ without any data conversion step.
 ObjectQuery gives you the **cleanest API** for querying Python objects at the
 cost of being **pure-Python slow** -- choose it when readability and convenience
 matter more than throughput.
-
-## TODOs
-
-- Sphinx documentation.
 
 ## Contribution
 
