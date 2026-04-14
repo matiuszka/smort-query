@@ -91,7 +91,6 @@ class ObjectQuery:
         >>> next(query)
         1
         >>> next(query)
-        >>> next(query)
         Traceback (most recent call last):
         File "<stdin>", line 1, in <module>
         File "object_query.py", line 95, in __next__
@@ -178,14 +177,13 @@ class ObjectQuery:
     @staticmethod
     def _setattr(obj: Any, attr: str, value: Any) -> None:
         """
-        Recursively sets attrbiutes for objects.
+        Recursively sets attributes for objects.
         Each nested object has to be separated by `__` signs.
 
         """
         current_attr, _, nested_attr = attr.rpartition("__")
-        getter = operator.attrgetter(current_attr)
-
-        return setattr(getter(obj) if current_attr else obj, nested_attr, value)
+        target = operator.attrgetter(current_attr)(obj) if current_attr else obj
+        setattr(target, nested_attr, value)
 
     @classmethod
     def _parse_lookup_string(cls, lookup_string: str) -> tuple[Callable, Callable]:
@@ -195,7 +193,7 @@ class ObjectQuery:
         Returns
         -------
         Tuple[Callable, Callable]
-            Getter function and coparator.
+            Getter function and comparator.
 
         """
         *lookup_parts, comparator_candidate = lookup_string.split("__")
@@ -210,7 +208,7 @@ class ObjectQuery:
 
     @classmethod
     def _filter_or_exclude(
-        cls, objects_source: Iterator, negate: bool, **lookups: dict
+        cls, objects_source: Iterator, negate: bool, **lookups: Any
     ) -> Iterator:
         """
         Yields objects that match or does not match(depends on `negate`) lookups from
@@ -240,7 +238,7 @@ class ObjectQuery:
                 getter, comparator = cls._parse_lookup_string(lookup_string)
 
                 try:
-                    if comparator(getter(obj), value) is negate:
+                    if bool(comparator(getter(obj), value)) is negate:
                         break
                 except AttributeError as err:
                     raise AttributeError(
@@ -301,7 +299,7 @@ class ObjectQuery:
         """
         return self._copy()
 
-    def filter(self, **lookups: dict) -> ObjectQuery:
+    def filter(self, **lookups: Any) -> ObjectQuery:
         """
         Filters objects by passed `lookups` and creates new query from it.
 
@@ -326,7 +324,7 @@ class ObjectQuery:
 
         return copy
 
-    def exclude(self, **lookups: dict) -> ObjectQuery:
+    def exclude(self, **lookups: Any) -> ObjectQuery:
         """
         Excludes objects that match passed `lookups`.
 
@@ -354,11 +352,17 @@ class ObjectQuery:
     def order_by(self, *attributes: str) -> ObjectQuery:
         """
         Sorts query in order of chosen attributes passed as `attributes` parameter.
+        Each attribute can have an independent sort direction. Adding ``-`` sign
+        at prefix makes ordering descending for that attribute, ascending otherwise.
+
+        Uses multiple stable sorts (one per attribute, in reverse declaration
+        order) so that each attribute has its own direction — matching Django
+        QuerySet semantics.
 
         Parameters
         ----------
         *attributes: str
-            Attributes that will be used for ordering. Addint `-` sign at prefix makes
+            Attributes that will be used for ordering. Adding ``-`` sign at prefix makes
             ordering descending, ascending otherwise.
 
         Returns
@@ -367,22 +371,23 @@ class ObjectQuery:
             New query created from ordered objects.
 
         """
-        attrs = []
-        reverse = False
         copy = self._copy()
 
+        parsed: list[tuple[str, bool]] = []
         for attr in attributes:
             if attr.startswith("-"):
-                attr = attr.lstrip("-")
-                reverse = True
+                parsed.append((attr.removeprefix("-").replace("__", "."), True))
+            else:
+                parsed.append((attr.replace("__", "."), False))
 
-            attrs.append(attr.replace("__", "."))
+        # Multi-key stable sort: apply sorts in reverse order so that the
+        # first attribute is the primary sort key.
+        items = list(copy.objects_source)
+        for attr_name, reverse in reversed(parsed):
+            getter = operator.attrgetter(attr_name)
+            items.sort(key=getter, reverse=reverse)
 
-        getter = operator.attrgetter(*attrs)
-        copy.objects_source = iter(
-            sorted(copy.objects_source, key=lambda obj: getter(obj), reverse=reverse)
-        )
-
+        copy.objects_source = iter(items)
         return copy
 
     def asc(self, *attributes: str) -> ObjectQuery:
@@ -470,16 +475,19 @@ class ObjectQuery:
 
         """
         copy = self._copy()
-        copy.objects_source = (
-            obj
-            for obj in copy.objects_source
-            if all(
-                self._setattr(obj, attr, call(obj)) is None
-                for attr, call in annotations.items()
-            )
-        )
+        copy.objects_source = self._apply_annotations(copy.objects_source, annotations)
 
         return copy
+
+    @staticmethod
+    def _apply_annotations(
+        source: Iterator, annotations: dict[str, Callable]
+    ) -> Iterator:
+        """Yields objects with annotations applied."""
+        for obj in source:
+            for attr, call in annotations.items():
+                ObjectQuery._setattr(obj, attr, call(obj))
+            yield obj
 
     def union(self, other: ObjectQuery) -> ObjectQuery:
         """

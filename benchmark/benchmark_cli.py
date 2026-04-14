@@ -86,43 +86,49 @@ arg_parser.add_argument(
     required=False,
 )
 
-args = arg_parser.parse_args()
-args.size = sorted(args.size)
 
-oq_performance = []
-df_performance = []
-results = "# NoRows ObjectQuery DataFrame\n"
-fig = None
+def main() -> None:
+    args = arg_parser.parse_args()
+    args.size = sorted(args.size)
 
-for size in args.size:
-    oq_perf = test_filtering(size, setup_test_objects, execute_object_query)
-    df_perf = test_filtering(size, setup_test_objects, execute_data_frame)
-    oq_performance.append(oq_perf)
-    df_performance.append(df_perf)
+    oq_performance = []
+    df_performance = []
+    results = "# NoRows ObjectQuery DataFrame\n"
+    fig = None
 
-if args.print or (args.log is not None):
-    for size, oq_perf, df_perf in zip(
-        args.size, oq_performance, df_performance, strict=False
-    ):
-        results += f"{size} {oq_perf} {df_perf}\n"
+    for size in args.size:
+        oq_perf = test_filtering(size, setup_test_objects, execute_object_query)
+        df_perf = test_filtering(size, setup_test_objects, execute_data_frame)
+        oq_performance.append(oq_perf)
+        df_performance.append(df_perf)
 
-if args.print:
-    print(results, end="")
+    if args.print or (args.log is not None):
+        for size, oq_perf, df_perf in zip(
+            args.size, oq_performance, df_performance, strict=False
+        ):
+            results += f"{size} {oq_perf} {df_perf}\n"
 
-if args.log is not None:
-    with open(args.log, "w") as fd:
-        fd.write(results)
+    if args.print:
+        print(results, end="")
 
-if args.show or (args.img is not None):
-    fig = plot_results(
-        args.size,
-        f"{project_name.title().replace(' ', '')} -- performance of filtering",
-        tested_version(),
-        ObjectQuery=oq_performance,
-        DataFrame=df_performance,
-    )
-    if args.img is not None:
-        fig.savefig(args.img, bbox_inches="tight", pad_inches=0.2, dpi=120)
+    if args.log is not None:
+        with open(args.log, "w", encoding="utf-8") as f:
+            f.write(results)
 
-if args.show:
-    plt.show()
+    if args.show or (args.img is not None):
+        fig = plot_results(
+            args.size,
+            f"{project_name.title().replace(' ', '')} -- performance of filtering",
+            tested_version(),
+            ObjectQuery=oq_performance,
+            DataFrame=df_performance,
+        )
+        if args.img is not None:
+            fig.savefig(args.img, bbox_inches="tight", pad_inches=0.2, dpi=120)
+
+    if args.show:
+        plt.show()
+
+
+if __name__ == "__main__":
+    main()
