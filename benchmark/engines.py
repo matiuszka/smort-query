@@ -20,9 +20,8 @@ import duckdb
 import pandas as pd
 import polars as pl
 
-from smort_query import ObjectQuery
-
 from benchmark.testlib import Human, age_max, age_min
+from smort_query import ObjectQuery
 
 # ---------------------------------------------------------------------------
 # Abstract base
@@ -40,7 +39,7 @@ class Engine(ABC):
 
     @abstractmethod
     def filter(self, data: Any) -> Any:
-        """Filter: age >= age_min AND age <= age_max. Must return materialised result."""
+        """Filter: age >= age_min AND age <= age_max."""
 
     @abstractmethod
     def sort(self, data: Any) -> Any:
@@ -56,7 +55,7 @@ class Engine(ABC):
 
     @abstractmethod
     def materialize(self, data: Any) -> Any:
-        """Full iteration / materialisation of all data. Must return materialised result."""
+        """Full iteration / materialisation of all data."""
 
 
 # ---------------------------------------------------------------------------

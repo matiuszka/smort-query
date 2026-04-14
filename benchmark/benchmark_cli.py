@@ -20,7 +20,6 @@ Usage examples:
 from __future__ import annotations
 
 from argparse import ArgumentParser, RawTextHelpFormatter
-from pathlib import Path
 from textwrap import dedent
 
 import matplotlib.pyplot as plt  # type: ignore
@@ -40,7 +39,7 @@ from benchmark.testlib import (
 # ---------------------------------------------------------------------------
 
 arg_parser = ArgumentParser(
-    prog=f"python -m benchmark.benchmark_cli",
+    prog="python -m benchmark.benchmark_cli",
     description=f"Benchmark tests for {project_name.replace(' ', '_')} package.\n\n"
     f"Compares ObjectQuery against pandas, polars, list comprehension,\n"
     f"filter()+lambda, SQLite in-memory, and DuckDB in-memory.",
@@ -172,7 +171,7 @@ def main() -> None:
                 log_lines.append(f"{engine.name:<{col_width}} {time_s:.6f}")
 
     # Print summary
-    if getattr(args, "print"):
+    if vars(args)["print"]:
         print("\n" + "=" * 60)
         print("SUMMARY")
         print("=" * 60)
