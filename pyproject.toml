@@ -66,6 +66,7 @@ known-first-party = ["smort_query"]
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
+exclude = ["benchmark"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
