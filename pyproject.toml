@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "smort-query"
-version = "2.2.0"
+version = "2.3.0"
 description = "Django like query engine for any objects."
 readme = "README.md"
 license = "MIT"
@@ -37,6 +37,8 @@ benchmark = [
     "matplotlib>=3.10",
     "pandas>=2.2",
     "pandas-stubs>=2.2",
+    "polars>=1.0",
+    "duckdb>=1.0",
 ]
 
 [tool.ruff]
@@ -59,6 +61,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "benchmark/testlib.py" = ["F401"]
+"benchmark/engines.py" = ["F401"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["smort_query"]

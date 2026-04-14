@@ -500,6 +500,60 @@ Project supports many comparators that can be chosen as postfix for lookup:
 - `lte` makes `a <= b`
 - `le` makes `a <= b`
 
+## Performance & When to Use
+
+ObjectQuery is designed for **developer ergonomics**, not raw speed. It trades
+performance for a clean, Django-like API that works on arbitrary Python objects
+without any data conversion step.
+
+### Benchmark results (100 000 objects, Python 3.13)
+
+| Operation | ObjectQuery | list comprehension | filter+lambda | pandas | polars | SQLite | DuckDB |
+|---|---|---|---|---|---|---|---|
+| **filter** | 74.8 ms | 4.3 ms | 5.2 ms | 0.6 ms | **0.2 ms** | 32.5 ms | 12.0 ms |
+| **sort** | 26.5 ms | 37.5 ms | 37.6 ms | **2.3 ms** | 2.1 ms | 155.4 ms | 36.1 ms |
+| **filter+sort** | 84.0 ms | 15.2 ms | 16.1 ms | 1.5 ms | **1.2 ms** | 55.4 ms | 13.6 ms |
+| **unique** | 3.3 ms | 1.8 ms | 1.8 ms | **0.4 ms** | 0.5 ms | 14.4 ms | 1.0 ms |
+| **materialize** | 4.1 ms | **0.3 ms** | 0.3 ms | 74.0 ms | 41.4 ms | 76.3 ms | 31.1 ms |
+
+> Numbers are the best of 3 repeats, 50 iterations each. Benchmark source in
+> `benchmark/`. Run with:
+> `uv run python -m benchmark.benchmark_cli --size 100 1000 10000 100000 --print --img chart.png`
+
+### When ObjectQuery is a good fit
+
+- **Small to medium datasets (up to ~5 000 objects)** -- the overhead is
+  negligible and you get a much more readable query pipeline than nested
+  list comprehensions.
+- **Working with rich domain objects** -- dataclasses, ORM-like models, nested
+  attribute trees. No need to flatten your data into rows/columns first.
+- **Lazy pipelines over iterators/generators** -- ObjectQuery never materializes
+  intermediate results (except for sort/reverse), so it composes well with
+  streaming data.
+- **Prototyping and glue code** -- when developer time matters more than
+  microseconds. The Django-like API is immediately familiar and self-documenting.
+- **Zero-dependency contexts** -- the only runtime dependency is `more-itertools`.
+  No C extensions, no compilation step, no heavy imports.
+
+### When to reach for something else
+
+- **Large datasets (50 000+ objects) with filtering** -- columnar engines like
+  **polars** or **pandas** operate on contiguous memory in C/Rust and will be
+  orders of magnitude faster. At 100k objects, polars filters ~370x faster.
+- **Repeated analytical queries on the same data** -- if you load data once and
+  query it many times, converting to a DataFrame upfront pays off quickly.
+- **Sorting large collections** -- Python-level attribute access in a sort key
+  does not scale well. pandas/polars sort 100k rows ~12x faster.
+- **SQL-shaped problems** -- if your data fits naturally into tables with JOINs
+  and GROUP BYs, use an actual database (SQLite, DuckDB). ObjectQuery does not
+  support aggregation or joins.
+
+### The tradeoff in one sentence
+
+ObjectQuery gives you the **cleanest API** for querying Python objects at the
+cost of being **pure-Python slow** -- choose it when readability and convenience
+matter more than throughput.
+
 ## TODOs
 
 - Sphinx documentation.
