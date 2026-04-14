@@ -2,6 +2,7 @@
 Auxiliary library for benchmark tests.
 
 """
+
 __all__ = [
     "execute_data_frame",
     "execute_object_query",
@@ -12,21 +13,23 @@ __all__ = [
     "tested_version",
 ]
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from importlib.metadata import version as pkg_version
 from random import choice, randint, seed
 from sys import version
 from textwrap import dedent
 from timeit import repeat
-from typing import Callable, List
 
 import matplotlib.pyplot as plt  # type: ignore
 from pandas import DataFrame
 from pandas import __version__ as pd_ver
-from smort_query import ObjectQuery
-from smort_query import __version__ as smort_ver
 
 from benchmark import project_name
+from smort_query import ObjectQuery
+
+smort_ver = pkg_version("smort-query")
 
 python_ver = version.split()[0]
 N_it = 100  # Number of iterations for repeat function.
@@ -108,7 +111,7 @@ def tested_version() -> str:
     versions = dedent(
         f"""\
     - python {python_ver}
-    - {project_name.replace(' ', '_')} {smort_ver}
+    - {project_name.replace(" ", "_")} {smort_ver}
     - pandas {pd_ver}
     """
     )
@@ -116,7 +119,7 @@ def tested_version() -> str:
 
 
 def plot_results(
-    size: list, title: str, version: str, **kwargs: List[float]
+    size: list, title: str, version: str, **kwargs: list[float]
 ) -> plt.Figure:
     """
     Plot comparison of time execution for two different objects with variable
@@ -130,7 +133,7 @@ def plot_results(
     ax.set_xlabel("Number of rows", fontsize=15)
     ax.set_ylabel("Execution time [s]", fontsize=15)
     ax.tick_params(axis="both", labelsize=12)
-    for performance, color in zip(kwargs, colors):
+    for performance, color in zip(kwargs, colors, strict=False):
         ax.plot(size, kwargs[performance], "o--", color=color, label=performance)
     ax.legend(title=version, title_fontsize="small")
 

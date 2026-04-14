@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "smort-query"
+version = "2.0.0"
+description = "Django like query engine for any objects."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Mateusz Nowak", email = "nowak.mateusz@hotmail.com" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = ["more-itertools>=10.0"]
+
+[project.urls]
+Homepage = "https://github.com/matiuszka/smort-query"
+Repository = "https://github.com/matiuszka/smort-query"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "pytest>=8.3",
+    "pytest-cov>=6.1",
+]
+benchmark = [
+    "ipython>=8.31",
+    "matplotlib>=3.10",
+    "pandas>=2.2",
+    "pandas-stubs>=2.2",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E231", # missing whitespace (carried over from old flake8 config)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"benchmark/testlib.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["smort_query"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

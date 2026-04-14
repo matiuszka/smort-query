@@ -1,5 +1,5 @@
+from collections.abc import Iterable, Iterator
 from random import shuffle
-from typing import Iterable, Iterator
 
 import pytest
 
@@ -16,7 +16,7 @@ class Asset:
 
     def __eq__(self, other):
         for (dk1, dk1v), (dk2, dk2v) in zip(
-            self.__dict__.items(), other.__dict__.items()
+            self.__dict__.items(), other.__dict__.items(), strict=False
         ):
             if dk1 != dk2 or dk1v != dk2v:
                 break
@@ -56,7 +56,7 @@ class TestIteration:
     def test_iteration(self):
         oq = ObjectQuery(range(10))
 
-        for x, y in zip(oq, range(10)):
+        for x, y in zip(oq, range(10), strict=False):
             assert x == y
 
 

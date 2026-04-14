@@ -2,6 +2,7 @@
 CLI for making benchmark tests.
 
 """
+
 from argparse import ArgumentParser, RawTextHelpFormatter
 from pathlib import Path
 from textwrap import dedent
@@ -100,7 +101,9 @@ for size in args.size:
     df_performance.append(df_perf)
 
 if args.print or (args.log is not None):
-    for size, oq_perf, df_perf in zip(args.size, oq_performance, df_performance):
+    for size, oq_perf, df_perf in zip(
+        args.size, oq_performance, df_performance, strict=False
+    ):
         results += f"{size} {oq_perf} {df_perf}\n"
 
 if args.print:
@@ -113,7 +116,7 @@ if args.log is not None:
 if args.show or (args.img is not None):
     fig = plot_results(
         args.size,
-        f"{project_name.title().replace(' ','')} -- performance of filtering",
+        f"{project_name.title().replace(' ', '')} -- performance of filtering",
         tested_version(),
         ObjectQuery=oq_performance,
         DataFrame=df_performance,

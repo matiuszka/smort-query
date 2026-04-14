@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import operator
+from collections.abc import Callable, Iterable, Iterator
 from itertools import chain, tee
-from typing import Any, Callable, Iterable, Iterator, Tuple, Union
+from typing import Any
 
 from more_itertools import islice_extended
 
@@ -32,7 +33,7 @@ class ObjectQuery:
         "le": operator.le,
     }
 
-    def __init__(self, objects: Union[Iterator, Iterable]) -> None:
+    def __init__(self, objects: Iterator | Iterable) -> None:
         """
         Initializes objects by passing either an iterator or an iterable.
 
@@ -51,11 +52,11 @@ class ObjectQuery:
 
         try:
             self.objects_source = iter(objects)
-        except TypeError:
+        except TypeError as err:
             raise TypeError(
                 f"The objects parameter has to be an iterator or an iterable,"
                 f" but is {type(objects)}."
-            )
+            ) from err
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} for {self.objects_source}>"
@@ -117,7 +118,7 @@ class ObjectQuery:
         """
         return len(self._evaluate_query())
 
-    def __getitem__(self, key: Union[int, slice]) -> Union[Any, ObjectQuery]:
+    def __getitem__(self, key: int | slice) -> Any | ObjectQuery:
         """
         If key is an integer it evaluates query and returns item.
         If key is a slice it returns another unevaluated ObjectQuery.
@@ -180,7 +181,7 @@ class ObjectQuery:
         return setattr(getter(obj) if current_attr else obj, nested_attr, value)
 
     @classmethod
-    def _parse_lookup_string(cls, lookup_string: str) -> Tuple[Callable, Callable]:
+    def _parse_lookup_string(cls, lookup_string: str) -> tuple[Callable, Callable]:
         """
         Parses lookup string into getter function and comparator function.
 
@@ -234,10 +235,10 @@ class ObjectQuery:
                 try:
                     if comparator(getter(obj), value) is negate:
                         break
-                except AttributeError:
+                except AttributeError as err:
                     raise AttributeError(
                         f"The '{lookup_string}' is not valid attribute for {obj}."
-                    )
+                    ) from err
             else:
                 yield obj
 
