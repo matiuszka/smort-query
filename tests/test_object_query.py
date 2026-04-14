@@ -71,6 +71,15 @@ class TestLen:
         with pytest.raises(StopIteration):
             next(list_iter)
 
+    def test_len_uses_cache(self):
+        query = ObjectQuery(range(10))
+
+        assert len(query) == 10
+        # Second call should use cache and return the same result
+        assert len(query) == 10
+        # Iterator should still work after cached len
+        assert list(query) == list(range(10))
+
 
 class TestGetItem:
     def test_get_item(self):
@@ -82,6 +91,22 @@ class TestGetItem:
         query = ObjectQuery(range(10))
 
         assert list(query[5:0:-1]) == list(range(10))[5:0:-1]
+
+    def test_get_item_uses_cache(self):
+        query = ObjectQuery(range(10))
+
+        assert query[5] == 5
+        # Second call should use cache
+        assert query[3] == 3
+        assert query[9] == 9
+
+    def test_len_then_getitem(self):
+        query = ObjectQuery(range(10))
+
+        assert len(query) == 10
+        # After len, getitem should use the same cache
+        assert query[5] == 5
+        assert query[0] == 0
 
 
 class TestAll:
@@ -452,6 +477,58 @@ class TestReversed:
         assert list(query.reverse()) == list(reversed(range(10)))
 
 
+class TestAsc:
+    def test_ascending_single(self):
+        input_items = [Asset(id=i) for i in range(10)]
+        output_items = [Asset(id=i) for i in range(10)]
+
+        shuffle(input_items)
+
+        assert list(ObjectQuery(input_items).asc("id")) == output_items
+
+    def test_ascending_multiple(self):
+        input_items = [Asset(id=0, sid=i) for i in range(10)]
+        output_items = [Asset(id=0, sid=i) for i in range(10)]
+
+        shuffle(input_items)
+
+        assert list(ObjectQuery(input_items).asc("id", "sid")) == output_items
+
+    def test_ascending_nested(self):
+        input_items = [Asset(nested=Asset(id=i)) for i in range(10)]
+        output_items = [Asset(nested=Asset(id=i)) for i in range(10)]
+
+        shuffle(input_items)
+
+        assert list(ObjectQuery(input_items).asc("nested__id")) == output_items
+
+
+class TestDesc:
+    def test_descending_single(self):
+        input_items = [Asset(id=i) for i in range(10)]
+        output_items = list(reversed([Asset(id=i) for i in range(10)]))
+
+        shuffle(input_items)
+
+        assert list(ObjectQuery(input_items).desc("id")) == output_items
+
+    def test_descending_multiple(self):
+        input_items = [Asset(id=0, sid=i) for i in range(10)]
+        output_items = list(reversed([Asset(id=0, sid=i) for i in range(10)]))
+
+        shuffle(input_items)
+
+        assert list(ObjectQuery(input_items).desc("id", "sid")) == output_items
+
+    def test_descending_nested(self):
+        input_items = [Asset(nested=Asset(id=i)) for i in range(10)]
+        output_items = list(reversed([Asset(nested=Asset(id=i)) for i in range(10)]))
+
+        shuffle(input_items)
+
+        assert list(ObjectQuery(input_items).desc("nested__id")) == output_items
+
+
 class TestAnnotate:
     def test_flat_attribute(self):
         input_items = [Asset(id=i, sid=i) for i in range(10)]
@@ -505,3 +582,105 @@ class TestOR:
         q2 = ObjectQuery(range(10))
 
         assert list(q1 | q2) == list(range(10)) + list(range(10))
+
+
+class TestUniqueJustseen:
+    def test_no_attributes(self):
+        assert list(ObjectQuery([1, 1, 2, 2, 3, 1]).unique_justseen()) == [1, 2, 3, 1]
+
+    def test_with_attribute(self):
+        items = [
+            Asset(id=0, name="a"),
+            Asset(id=0, name="b"),
+            Asset(id=1, name="c"),
+            Asset(id=1, name="d"),
+            Asset(id=0, name="e"),
+        ]
+
+        result = list(ObjectQuery(items).unique_justseen("id"))
+
+        assert result == [items[0], items[2], items[4]]
+
+    def test_with_nested_attribute(self):
+        items = [
+            Asset(nested=Asset(id=0)),
+            Asset(nested=Asset(id=0)),
+            Asset(nested=Asset(id=1)),
+        ]
+
+        result = list(ObjectQuery(items).unique_justseen("nested__id"))
+
+        assert result == [items[0], items[2]]
+
+    def test_empty(self):
+        assert list(ObjectQuery([]).unique_justseen()) == []
+
+
+class TestUniqueEverseen:
+    def test_no_attributes(self):
+        assert list(ObjectQuery([1, 1, 2, 2, 3, 1]).unique_everseen()) == [1, 2, 3]
+
+    def test_with_attribute(self):
+        items = [
+            Asset(id=0, name="a"),
+            Asset(id=0, name="b"),
+            Asset(id=1, name="c"),
+            Asset(id=1, name="d"),
+            Asset(id=0, name="e"),
+        ]
+
+        result = list(ObjectQuery(items).unique_everseen("id"))
+
+        assert result == [items[0], items[2]]
+
+    def test_with_nested_attribute(self):
+        items = [
+            Asset(nested=Asset(id=0)),
+            Asset(nested=Asset(id=1)),
+            Asset(nested=Asset(id=0)),
+        ]
+
+        result = list(ObjectQuery(items).unique_everseen("nested__id"))
+
+        assert result == [items[0], items[1]]
+
+    def test_empty(self):
+        assert list(ObjectQuery([]).unique_everseen()) == []
+
+
+class TestIntersection:
+    def test_no_attributes(self):
+        q1 = ObjectQuery([1, 2, 3, 4, 5])
+        q2 = ObjectQuery([3, 4, 5, 6, 7])
+
+        assert list(q1.intersection(q2)) == [3, 4, 5]
+
+    def test_with_attribute(self):
+        items1 = [Asset(id=0), Asset(id=1), Asset(id=2)]
+        items2 = [Asset(id=1), Asset(id=2), Asset(id=3)]
+
+        result = list(ObjectQuery(items1).intersection(ObjectQuery(items2), "id"))
+
+        assert result == [items1[1], items1[2]]
+
+    def test_no_overlap(self):
+        q1 = ObjectQuery([1, 2, 3])
+        q2 = ObjectQuery([4, 5, 6])
+
+        assert list(q1.intersection(q2)) == []
+
+    def test_empty(self):
+        q1 = ObjectQuery([1, 2, 3])
+        q2 = ObjectQuery([])
+
+        assert list(q1.intersection(q2)) == []
+
+    def test_with_nested_attribute(self):
+        items1 = [Asset(nested=Asset(id=0)), Asset(nested=Asset(id=1))]
+        items2 = [Asset(nested=Asset(id=1)), Asset(nested=Asset(id=2))]
+
+        result = list(
+            ObjectQuery(items1).intersection(ObjectQuery(items2), "nested__id")
+        )
+
+        assert result == [items1[1]]

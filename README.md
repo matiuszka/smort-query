@@ -9,16 +9,16 @@
 ![alt text](https://media3.giphy.com/media/hFROvOhBPQVRm/giphy.gif "Smort")
 
 Lazy evaluated query implementation for searching through Python objects
-inspired by [Django QuerySets](https://docs.djangoproject.com/en/3.0/ref/models/querysets/#queryset-api-reference).
+inspired by [Django QuerySets](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#queryset-api-reference).
 
 - GitHub: https://github.com/matiuszka/smort-query
 - PyPi: https://pypi.org/project/smort-query
 
 ## Rationale
 
-In many moments of our programing tasks we have to filter iterables in
+In many moments of our programming tasks we have to filter iterables in
 search of the right objects in right order.
-I realized that most of the time code looks almost the same, but what kind of interface will be easiest to use ? In that moment I figured out that [Django QuerySets](https://docs.djangoproject.com/en/3.0/ref/models/querysets/#queryset-api-reference) implementation is kinda handy and well known.
+I realized that most of the time code looks almost the same, but what kind of interface will be easiest to use? In that moment I figured out that [Django QuerySets](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#queryset-api-reference) implementation is kinda handy and well known.
 
 So I decided to write small query engine that interface will be similar to Django one.
 But it will work for Python objects. Additional assumption was that it will be lazy evaluated to
@@ -26,9 +26,9 @@ avoid memory consumption.
 
 ## Lookup format
 
-Whole idea relays on keywords arguments naming format.
+Whole idea relies on keywords arguments naming format.
 Let's consider following qualname `attr1.attr2` which can we used to get or set value for attribute.
-This engine do things similarly but instead of separating by dot(`.`) we are separating by `__` signs.
+This engine does things similarly but instead of separating by dot(`.`) we are separating by `__` signs.
 So above example can be converted to keyword argument name like that `attr1__attr2`. Due to fact that we can't use `.` in argument names.
 
 For some methods like `filter` and `exclude`, we can also specify comparator.
@@ -52,7 +52,7 @@ from smort_query import ObjectQuery
 from smort_query import OQ
 ```
 
-## How it works ?
+## How it works?
 
 ### Basics
 
@@ -143,9 +143,9 @@ Query sets can be evaluated in several ways:
   """
   ```
 
-### User cases
+### Use cases
 
-Let's consider fallowing code for populating faked humans:
+Let's consider following code for populating faked humans:
 
 ```python
 from random import randint, choice
@@ -193,7 +193,7 @@ humans = [make_random_human(i) for i in range(10)]
 
 ### Filtering and excluding
 
-Finding peoples from age between [30; 75). To that we will used specialized comparators:
+Finding people from age between [30; 75). To do that we will use specialized comparators:
 
 ```python
 list(ObjectQuery(humans).filter(age__ge=30, age__lt=75))
@@ -209,7 +209,7 @@ list(ObjectQuery(humans).filter(age__ge=30, age__lt=75))
 """
 ```
 
-We can also excluding males in similar way:
+We can also exclude males in a similar way:
 
 ```python
 list(ObjectQuery(humans).exclude(sex="male"))
@@ -406,9 +406,87 @@ list(both2)
 """
 ```
 
+### Ascending and descending ordering
+
+The `asc()` and `desc()` methods are shorthands for `order_by()` with a predefined direction:
+
+```python
+list(ObjectQuery(humans).asc("age"))
+"""out:
+[{'name': 0, 'age': 24, 'sex': 'female', 'height': 161, 'weight': 71},
+ {'name': 1, 'age': 33, 'sex': 'female', 'height': 205, 'weight': 67},
+ {'name': 7, 'age': 35, 'sex': 'female', 'height': 170, 'weight': 75},
+ {'name': 9, 'age': 43, 'sex': 'female', 'height': 198, 'weight': 78},
+ {'name': 2, 'age': 45, 'sex': 'female', 'height': 186, 'weight': 74},
+ {'name': 3, 'age': 48, 'sex': 'female', 'height': 173, 'weight': 78},
+ {'name': 6, 'age': 64, 'sex': 'male', 'height': 179, 'weight': 63},
+ {'name': 8, 'age': 64, 'sex': 'male', 'height': 188, 'weight': 72},
+ {'name': 4, 'age': 73, 'sex': 'male', 'height': 174, 'weight': 62},
+ {'name': 5, 'age': 75, 'sex': 'male', 'height': 189, 'weight': 77}]
+"""
+
+list(ObjectQuery(humans).desc("age"))
+"""out:
+[{'name': 5, 'age': 75, 'sex': 'male', 'height': 189, 'weight': 77},
+ {'name': 4, 'age': 73, 'sex': 'male', 'height': 174, 'weight': 62},
+ {'name': 6, 'age': 64, 'sex': 'male', 'height': 179, 'weight': 63},
+ {'name': 8, 'age': 64, 'sex': 'male', 'height': 188, 'weight': 72},
+ {'name': 3, 'age': 48, 'sex': 'female', 'height': 173, 'weight': 78},
+ {'name': 2, 'age': 45, 'sex': 'female', 'height': 186, 'weight': 74},
+ {'name': 9, 'age': 43, 'sex': 'female', 'height': 198, 'weight': 78},
+ {'name': 7, 'age': 35, 'sex': 'female', 'height': 170, 'weight': 75},
+ {'name': 1, 'age': 33, 'sex': 'female', 'height': 205, 'weight': 67},
+ {'name': 0, 'age': 24, 'sex': 'female', 'height': 161, 'weight': 71}]
+"""
+```
+
+### Removing duplicates
+
+`unique_justseen()` removes consecutive duplicates, while `unique_everseen()` removes all duplicates keeping the first occurrence. Both accept optional attribute names for comparison:
+
+```python
+list(ObjectQuery([1, 1, 2, 2, 3, 1]).unique_justseen())
+"""out:
+[1, 2, 3, 1]
+"""
+
+list(ObjectQuery([1, 1, 2, 2, 3, 1]).unique_everseen())
+"""out:
+[1, 2, 3]
+"""
+```
+
+With attribute-based comparison:
+
+```python
+root_query = ObjectQuery(humans)
+# Remove consecutive duplicates by sex
+list(root_query.unique_justseen("sex"))
+# Remove all duplicates by sex (keeps first female and first male)
+list(root_query.unique_everseen("sex"))
+```
+
+### Intersection
+
+The `intersection()` method returns objects present in both queries.
+Comparison can be done by equality or by specific attributes:
+
+```python
+young = ObjectQuery(humans).filter(age__lt=50)
+tall = ObjectQuery(humans).filter(height__gt=180)
+
+# Find young AND tall humans
+list(young.intersection(tall))
+
+# Or compare by specific attribute
+q1 = ObjectQuery(humans)[:5]
+q2 = ObjectQuery(humans)[3:]
+list(q1.intersection(q2, "name"))
+```
+
 ## Supported Comparators
 
-Project supports many comparator that can be chosen as postfix for lookup:
+Project supports many comparators that can be chosen as postfix for lookup:
 
 - Default comparator is `eq`
 - `eq` makes `a == b`
@@ -425,12 +503,6 @@ Project supports many comparator that can be chosen as postfix for lookup:
 ## TODOs
 
 - Sphinx documentation.
-- The `asc()` and `desc()` methods which works same as `order_by()` but with specified order in advance.
-- The `unique_justseen()` and `unique_everseen()` methods to remove duplicates.
-  Comparison realized by passed attributes or delegated to objects equality `__eq__`.
-- The `intersection()` method for finding common objects in two queries.
-  Comparison realized by passed attributes or delegated to objects equality `__eq__`.
-- The `__len__` and `__getitem__` improvement for evaluating query only once per life cycle.
 
 ## Contribution
 

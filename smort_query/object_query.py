@@ -5,7 +5,7 @@ from collections.abc import Callable, Iterable, Iterator
 from itertools import chain, tee
 from typing import Any
 
-from more_itertools import islice_extended
+from more_itertools import islice_extended, unique_everseen, unique_justseen
 
 
 class ObjectQuery:
@@ -49,6 +49,7 @@ class ObjectQuery:
 
         """
         self.objects_source: Iterator
+        self._evaluated_cache: list | None = None
 
         try:
             self.objects_source = iter(objects)
@@ -102,7 +103,8 @@ class ObjectQuery:
 
     def __len__(self) -> int:
         """
-        Return number of items in query. It evaluates query.
+        Return number of items in query. It evaluates query only once.
+        Subsequent calls use the cached result.
 
         Returns
         -------
@@ -116,12 +118,15 @@ class ObjectQuery:
         10
 
         """
+        if self._evaluated_cache is not None:
+            return len(self._evaluated_cache)
         return len(self._evaluate_query())
 
     def __getitem__(self, key: int | slice) -> Any | ObjectQuery:
         """
         If key is an integer it evaluates query and returns item.
-        If key is a slice it returns another unevaluated ObjectQuery.
+        Uses cached result if available. If key is a slice it returns
+        another unevaluated ObjectQuery.
 
         Parameters
         ----------
@@ -146,6 +151,8 @@ class ObjectQuery:
                 islice_extended(self.objects_source, key.start, key.stop, key.step)
             )
 
+        if self._evaluated_cache is not None:
+            return self._evaluated_cache[key]
         return self._evaluate_query()[key]
 
     def __or__(self, other: ObjectQuery) -> ObjectQuery:
@@ -257,7 +264,8 @@ class ObjectQuery:
 
     def _evaluate_query(self) -> list:
         """
-        Evaluates query and saves iterator.
+        Evaluates query and caches result. Subsequent calls return
+        the cached result without re-evaluating.
 
         Return
         ------
@@ -265,10 +273,13 @@ class ObjectQuery:
             Evaluated query.
 
         """
-        evaluated_query = list(self.objects_source)
-        self.objects_source = iter(evaluated_query)
+        if self._evaluated_cache is not None:
+            return self._evaluated_cache
 
-        return evaluated_query
+        self._evaluated_cache = list(self.objects_source)
+        self.objects_source = iter(self._evaluated_cache)
+
+        return self._evaluated_cache
 
     def all(self) -> ObjectQuery:
         """
@@ -374,6 +385,54 @@ class ObjectQuery:
 
         return copy
 
+    def asc(self, *attributes: str) -> ObjectQuery:
+        """
+        Sorts query in ascending order by chosen attributes.
+        Shorthand for ``order_by()`` without ``-`` prefix.
+
+        Parameters
+        ----------
+        *attributes: str
+            Attributes that will be used for ascending ordering.
+            Nested attributes should be separated by ``__`` signs.
+
+        Returns
+        -------
+        ObjectQuery
+            New query created from ordered objects.
+
+        Examples
+        --------
+        >>> list(ObjectQuery([Asset(id=2), Asset(id=1)]).asc("id"))
+        [{'id': 1}, {'id': 2}]
+
+        """
+        return self.order_by(*attributes)
+
+    def desc(self, *attributes: str) -> ObjectQuery:
+        """
+        Sorts query in descending order by chosen attributes.
+        Shorthand for ``order_by()`` with ``-`` prefix on all attributes.
+
+        Parameters
+        ----------
+        *attributes: str
+            Attributes that will be used for descending ordering.
+            Nested attributes should be separated by ``__`` signs.
+
+        Returns
+        -------
+        ObjectQuery
+            New query created from ordered objects.
+
+        Examples
+        --------
+        >>> list(ObjectQuery([Asset(id=1), Asset(id=2)]).desc("id"))
+        [{'id': 2}, {'id': 1}]
+
+        """
+        return self.order_by(*(f"-{attr}" for attr in attributes))
+
     def reverse(self) -> ObjectQuery:
         """
         Creates a new reversed query. Unfortunately we cannot reverse iterator without
@@ -438,3 +497,109 @@ class ObjectQuery:
 
         """
         return self | other
+
+    def unique_justseen(self, *attributes: str) -> ObjectQuery:
+        """
+        Removes consecutive duplicates from query. If ``attributes`` are
+        provided, comparison is done by those attributes. Otherwise
+        objects are compared by equality (``__eq__``).
+
+        Parameters
+        ----------
+        *attributes: str
+            Optional attribute names used for comparison.
+            Nested attributes should be separated by ``__`` signs.
+
+        Returns
+        -------
+        ObjectQuery
+            New query with consecutive duplicates removed.
+
+        Examples
+        --------
+        >>> list(ObjectQuery([1, 1, 2, 2, 3, 1]).unique_justseen())
+        [1, 2, 3, 1]
+
+        """
+        copy = self._copy()
+        key = (
+            operator.attrgetter(*(a.replace("__", ".") for a in attributes))
+            if attributes
+            else None
+        )
+        copy.objects_source = unique_justseen(copy.objects_source, key=key)
+
+        return copy
+
+    def unique_everseen(self, *attributes: str) -> ObjectQuery:
+        """
+        Removes all duplicates from query, keeping the first occurrence.
+        If ``attributes`` are provided, comparison is done by those
+        attributes. Otherwise objects are compared by equality (``__eq__``).
+
+        Parameters
+        ----------
+        *attributes: str
+            Optional attribute names used for comparison.
+            Nested attributes should be separated by ``__`` signs.
+
+        Returns
+        -------
+        ObjectQuery
+            New query with all duplicates removed.
+
+        Examples
+        --------
+        >>> list(ObjectQuery([1, 1, 2, 2, 3, 1]).unique_everseen())
+        [1, 2, 3]
+
+        """
+        copy = self._copy()
+        key = (
+            operator.attrgetter(*(a.replace("__", ".") for a in attributes))
+            if attributes
+            else None
+        )
+        copy.objects_source = unique_everseen(copy.objects_source, key=key)
+
+        return copy
+
+    def intersection(self, other: ObjectQuery, *attributes: str) -> ObjectQuery:
+        """
+        Returns objects that are present in both queries. If ``attributes``
+        are provided, comparison is done by those attributes. Otherwise
+        objects are compared by equality (``__eq__``).
+
+        The ``other`` query is evaluated immediately to build a lookup set.
+
+        Parameters
+        ----------
+        other: ObjectQuery
+            Query to intersect with.
+        *attributes: str
+            Optional attribute names used for comparison.
+            Nested attributes should be separated by ``__`` signs.
+
+        Returns
+        -------
+        ObjectQuery
+            New query containing only objects present in both queries.
+
+        """
+        other_copy = other._copy()
+
+        if attributes:
+            getter = operator.attrgetter(*(a.replace("__", ".") for a in attributes))
+            other_keys = {getter(obj) for obj in other_copy}
+            copy = self._copy()
+            copy.objects_source = (
+                obj for obj in copy.objects_source if getter(obj) in other_keys
+            )
+        else:
+            other_items = list(other_copy)
+            copy = self._copy()
+            copy.objects_source = (
+                obj for obj in copy.objects_source if obj in other_items
+            )
+
+        return copy
